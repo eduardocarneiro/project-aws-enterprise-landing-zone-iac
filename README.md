@@ -1,92 +1,95 @@
-# project-aws-enterprise-landing-zone-iac
+# Project Marruá: Automated Enterprise AWS Landing Zone & Core Infrastructure
+
+[![Infrastructure as Code](https://img.shields.io/badge/IaC-Terraform-blueviolet?style=flat-square&logo=terraform)](https://www.terraform.io/)
+[![AWS Architecture](https://img.shields.io/badge/AWS-Multi--Account-orange?style=flat-square&logo=amazon-aws)](https://aws.amazon.com/)
+[![Governance](https://img.shields.io/badge/Governance-Control%20Tower-blue?style=flat-square)](https://aws.amazon.com/controltower/)
+
+## 📋 Project Overview
+Project Marruá simulates a production-grade, enterprise-scale AWS multi-account environment built from the ground up using Infrastructure as Code (IaC). This repository demonstrates how to architect a secure, scalable, and compliant AWS Landing Zone using **AWS Organizations**, **AWS Control Tower**, and **IAM Identity Center**, managed completely via **Terraform**.
+
+To demonstrate advanced cloud engineering capabilities while remaining cost-conscious on a personal AWS account, this implementation focuses deeply on two primary pillars of the environment:
+1. **The Core Network Account** (The central infrastructure hub).
+2. **The App1 Dev Account** (A decentralized application workload spoke).
+
+---
+
+## 🏗️ Architecture Design
+The infrastructure leverages a **Hub-and-Spoke networking topology** alongside an AWS-recommended multi-account strategy to enforce strong isolation boundaries for security, billing, and resource limits.
+
+### Multi-Account Organization Structure
+<pre>
+                              AWS ORGANIZATION
+                                        │
+ ┌──────────────────────────────────────┼──────────────────────────────────────┐
+ │                                      │                                      │
+ │                                      │                                      │
+ Security OU                      Infrastructure OU                      Workloads OU
+ │                                      │                                      │
+ │                                      │                                      │
+ ├── Log Archive                        ├── Network Account                    ├── DEV OU
+ ├── Audit Account                      │   ├── Transit Gateway                │    │
+ ├── Security Tooling                   │   ├── VPN Site-to-Site               │    ├── App1 Account
+ └── Compliance                         │   ├── Route 53 Private Hosted Zone   │────┤
+                                        │   └── Compliance                     │    └── App2 Account
+                                        │                                      │ 
+                                        ├── Shared Services                    ├── QA OU
+                                        ├── Identity Account                   └── Prod OU
+                                        └── CI/CD Account                      
+</pre>
+
+* **Management Account:** Reserved strictly for consolidated billing and organization governance. No application workloads run here.
+* **Security OU:** * `Log Archive Account`: Centralized, immutable storage for CloudTrail, Config, and VPC Flow Logs.
+  * `Audit Account`: Central compliance scanning and auditing (AWS Config, Security Hub).
+* **Infrastructure OU:**
+  * `Network Account` **[Implementation Focus]**: Manages ingress/egress traffic, cross-account routing, and centralized DNS.
+  * `CI/CD Account`: Houses GitOps deployment pipelines.
+* **Workloads OU (Nested Environments):**
+  * `DEV OU` ➔ `App1 Dev Account` **[Implementation Focus]**: Sandbox/Development space for individual application workloads.
+
+---
+
+## 🌐 Deep Dive: Network & Application Integration
+
+This project implements a secure, cross-account private DNS and connectivity resolution model between the central Network Hub and the Application Spoke.
 
 
+### 1. Central Network Account (The Hub)
+* **AWS Transit Gateway (TGW):** Acts as a cloud router to interconnect VPCs across different AWS accounts seamlessly.
+* **AWS Site-to-Site VPN:** Provisioned via Terraform to simulate encrypted on-premises connectivity to the cloud environment.
+* **Route 53 Central Private Hosted Zone (PHZ):** Houses the primary enterprise internal root domain (e.g., `corp.internal`).
 
-## Getting started
+### 2. App1 Dev Account (The Spoke)
+* **Isolated Workload VPC:** An application VPC containing isolated private subnets, decoupled from external network access.
+* **Route 53 Subdomain Delegation:** A local Private Hosted Zone managing `app1.dev.corp.internal`.
+* **Cross-Account DNS Resolution:** Implements Route 53 **VPC Association Authorizations** to bind the App1 Dev subdomain zone with the central Network Account's VPCs, allowing seamless private DNS lookup without traversing the public internet.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## 🛠️ Tech Stack & Tooling
+* **Cloud Provider:** Amazon Web Services (AWS)
+* **Governance & Automation:** AWS Control Tower, AWS Organizations, IAM Identity Center (Federated SSO)
+* **Infrastructure as Code:** Terraform (using S3 and DynamoDB for secure cross-account state-locking)
+* **CI/CD / GitOps:** GitLab CI/CD configured via OpenID Connect (OIDC) for passwordless role-assumption.
 
-## Add your files
+---
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## 🚀 Deployment Strategy & Cost Optimization
 
+> ⚠️ **Cost Optimization Note:** To keep this personal simulation cost-free or low-cost, expensive persistent networking components (like AWS Transit Gateway and Site-to-Site VPN) are designed to be short-lived. 
+
+The execution pipeline follows a strict **"Deploy, Document, and Destroy"** pattern:
+1. **Plan:** Review resource execution charts using `terraform plan`.
+2. **Deploy:** Execute `terraform apply` to dynamically spin up the landing zone, network hub, and application spokes.
+3. **Verify & Document:** Collect architectural proof, routing table verification metrics, and deployment screenshots for portfolio verification.
+4. **Tear Down:** Execute `terraform destroy` on the networking infrastructure blocks immediately following verification to eliminate hourly provisioning charges.
+
+---
+
+## 📂 Repository Structure
+```text
+├── terraform/
+│   ├── bootstrap/          # Configures OIDC, S3 state backend, and basic IAM roles
+│   ├── management/         # AWS Organizations & Control Tower baseline structures
+│   ├── network/            # TGW, VPN, Route 53 Central Hub configurations (Target Focus)
+└── documentation/          # Architecture diagrams, validation metrics, and screenshots
 ```
-cd existing_repo
-git remote add origin http://gitlab.lab.local/obsidian/project-aws-enterprise-landing-zone-iac.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](http://gitlab.lab.local/obsidian/project-aws-enterprise-landing-zone-iac/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
