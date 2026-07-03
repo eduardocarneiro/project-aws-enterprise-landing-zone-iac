@@ -1,11 +1,11 @@
-# Project Marruá: Automated Enterprise AWS Landing Zone & Core Infrastructure
+# Project Triton: Automated Enterprise AWS Landing Zone & Core Infrastructure
 
 [![Infrastructure as Code](https://img.shields.io/badge/IaC-Terraform-blueviolet?style=flat-square&logo=terraform)](https://www.terraform.io/)
 [![AWS Architecture](https://img.shields.io/badge/AWS-Multi--Account-orange?style=flat-square&logo=amazon-aws)](https://aws.amazon.com/)
 [![Governance](https://img.shields.io/badge/Governance-Control%20Tower-blue?style=flat-square)](https://aws.amazon.com/controltower/)
 
 ## 📋 Project Overview
-Project Marruá simulates a production-grade, enterprise-scale AWS multi-account environment built from the ground up using Infrastructure as Code (IaC). This repository demonstrates how to architect a secure, scalable, and compliant AWS Landing Zone using **AWS Organizations**, **AWS Control Tower**, and **IAM Identity Center**, managed completely via **Terraform**.
+Project Triton simulates a production-grade, enterprise-scale AWS multi-account environment built from the ground up using Infrastructure as Code (IaC). This repository demonstrates how to architect a secure, scalable, and compliant AWS Landing Zone using **AWS Organizations**, **AWS Control Tower**, and **IAM Identity Center**, managed completely via **Terraform**.
 
 To demonstrate advanced cloud engineering capabilities while remaining cost-conscious on a personal AWS account, this implementation focuses deeply on two primary pillars of the environment:
 1. **The Core Network Account** (The central infrastructure hub).
@@ -56,11 +56,11 @@ This project implements a secure, cross-account private DNS and connectivity res
 ### 1. Central Network Account (The Hub)
 * **AWS Transit Gateway (TGW):** Acts as a cloud router to interconnect VPCs across different AWS accounts seamlessly.
 * **AWS Site-to-Site VPN:** Provisioned via Terraform to simulate encrypted on-premises connectivity to the cloud environment.
-* **Route 53 Central Private Hosted Zone (PHZ):** Houses the primary enterprise internal root domain (e.g., `corp.internal`).
+* **Route 53 Central Private Hosted Zone (PHZ):** Houses the primary enterprise internal root domain (e.g., `triton.corp.net`).
 
 ### 2. App1 Dev Account (The Spoke)
 * **Isolated Workload VPC:** An application VPC containing isolated private subnets, decoupled from external network access.
-* **Route 53 Subdomain Delegation:** A local Private Hosted Zone managing `app1.dev.corp.internal`.
+* **Route 53 Subdomain Delegation:** A local Private Hosted Zone managing `.corp.internal`.
 * **Cross-Account DNS Resolution:** Implements Route 53 **VPC Association Authorizations** to bind the App1 Dev subdomain zone with the central Network Account's VPCs, allowing seamless private DNS lookup without traversing the public internet.
 
 ---
@@ -86,10 +86,10 @@ The execution pipeline follows a strict **"Deploy, Document, and Destroy"** patt
 ---
 
 ## 📂 Repository Structure
-```text
-├── terraform/
-│   ├── bootstrap/          # Configures OIDC, S3 state backend, and basic IAM roles
-│   ├── management/         # AWS Organizations & Control Tower baseline structures
-│   ├── network/            # TGW, VPN, Route 53 Central Hub configurations (Target Focus)
-└── documentation/          # Architecture diagrams, validation metrics, and screenshots
-```
+<pre>
+├── <a href="terraform">terraform/</a> 
+│   ├── <a href="terraform/bootstrap">bootstrap/</a>          # Configures OIDC, S3 state backend, and basic IAM roles
+│   ├── <a href="terraform/management">management/</a>         # AWS Organizations & Control Tower baseline structures
+│   ├── <a href="terraform/network">network/</a>            # TGW, VPN, Route 53 Central Hub configurations (Target Focus)
+└── <a href="terraform/documentation">documentation/</a>          # Architecture diagrams, validation metrics, and screenshots
+</pre>
