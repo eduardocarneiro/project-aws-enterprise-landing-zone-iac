@@ -1,0 +1,28 @@
+# Core Terraform directories
+.terraform/
+**/.terraform/*
+**/.terraform.lock*
+
+# Terraform state files (contain sensitive infrastructure secrets)
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+crash.*.log
+*.log
+
+# Exclude all variable files by default (contain passwords/private keys)
+*.tfvars
+*.tfvars.json
+
+# Exclude override files (used for quick local testing)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include CLI configuration files
+.terraformrc
+terraform.rc
+
