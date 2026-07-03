@@ -1,6 +1,6 @@
 # S3 Bucket for Terraform State
 resource "aws_s3_bucket" "terraform_state" {
-  bucket        = "triton-enterprise-tfstate-${var.aws_account_id}"
+  bucket        = "triton-enterprise-tfstate"
   force_destroy = true # Set to false in actual production environments
 
   lifecycle {
