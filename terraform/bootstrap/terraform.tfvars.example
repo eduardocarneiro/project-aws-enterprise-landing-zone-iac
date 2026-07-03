@@ -1,0 +1,5 @@
+# The target execution footprint region
+aws_region = "sa-east-1"
+
+# Replace with your exact GitHub or GitLab profile name where code is pushed
+github_organization_or_user = "YOUR-GITHUB-ACCOUNT"
